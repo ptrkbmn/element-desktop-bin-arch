@@ -2,8 +2,11 @@
 
 echo "Retrieving latest package information..."
 
+offsetHead=54
+offsetTail=21
+
 wget -qN https://packages.element.io/debian/dists/default/main/binary-amd64/Packages -O Packages
-version=$(sed -n '/^Version/ {p;q}' Packages | cut -d' ' -f2)
+version=$(head -$offsetHead Packages | tail -$offsetTail | sed -n '/^Version/ {p;q}' | cut -d' ' -f2)
 echo "Version: $version"
 
 echo "Checking PKGBUILD..."
@@ -17,7 +20,8 @@ then
 
   echo "PKGBUILD is already up-to-date"
 else
-  sha256=$(sed -n '/^SHA256/ {p;q}' Packages | cut -d' ' -f2)
+  sha256=$(head -$offsetHead Packages | tail -$offsetTail | sed -n '/^SHA256/ {p;q}' | cut -d' ' -f2)
+
   sed -i "s|^pkgver=.*|pkgver="$version"|" PKGBUILD
   sed -i "s|^sha256sums=.*|sha256sums=('"$sha256"'|" PKGBUILD
 
